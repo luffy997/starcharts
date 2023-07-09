@@ -13,3 +13,9 @@ go run main.go
 ```
 
 Then browse http://localhost:3000/me/myrepo .
+
+V1.0 计划做的功能：
+
+- 支持2-3个代码仓库的star时间对比（目前只支持2-3个）
+- 重构getStargazersPage()函数，重新设计缓存
+
