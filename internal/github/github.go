@@ -90,6 +90,7 @@ func (gh *GitHub) authorizedDo(req *http.Request, try int) (*http.Response, erro
 	}
 
 	// got a valid token, use it
+	log.Info("got a valid token, use it!")
 	req.Header.Add("Authorization", fmt.Sprintf("token %s", token.Key()))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

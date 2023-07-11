@@ -1,4 +1,5 @@
 // Package roundrobin provides round robin invalidation-aware load balancing of github tokens.
+// token 循环轮询算法设计
 package roundrobin
 
 import (
@@ -36,16 +37,22 @@ func (rr *realRoundRobin) Pick() (*Token, error) {
 	return rr.doPick(0)
 }
 
+// 达到负载均衡的函数，token循环使用
 func (rr *realRoundRobin) doPick(try int) (*Token, error) {
 	if try > len(rr.tokens) {
 		return nil, fmt.Errorf("no valid tokens left")
 	}
+	// atomic 原子操作，确保在并发下不会受到别的realRoundRobin的干扰
 	idx := atomic.LoadInt64(&rr.next)
+	// 使用atomic.StoreInt64函数将新的值(idx+1)%int64(len(rr.tokens))存储到rr.next中。
+	//它将当前索引加1，并使用len(rr.tokens)取模来实现循环。
 	atomic.StoreInt64(&rr.next, (idx+1)%int64(len(rr.tokens)))
 	if pick := rr.tokens[idx]; pick.OK() {
+		// 拿到tokens中索引为idx的token，判断是否合法，合法返回
 		log.Debugf("picked %s", pick.Key())
 		return pick, nil
 	}
+	// 递归，直到tokens为空或者拿到合法token再退出
 	return rr.doPick(try + 1)
 }
 
